@@ -1,13 +1,13 @@
 package com.chessgame;
 
+import com.chessgame.figures.Pawn;
+
+import java.util.ArrayList;
+
 public class Main {
 
     public static void main(String[] args) {
-        start();
-    }
-
-    public static void start() {
-        Board board = new Board(8);
-
+        Game game = new Game();
+        game.start();
     }
 }
