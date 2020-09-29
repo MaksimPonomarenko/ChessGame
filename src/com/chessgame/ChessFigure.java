@@ -29,4 +29,8 @@ public abstract class ChessFigure {
     public Position getStartPosition() {
         return startPosition;
     }
+
+    public int getSide() {
+        return side;
+    }
 }

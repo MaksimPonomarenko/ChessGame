@@ -20,36 +20,75 @@ public class Pawn extends ChessFigure {
         Position startPosition = this.getStartPosition();
 
         try {
-            // move forward
-            if (board.coordinates[position.column-1][position.row] == null) {
-                System.out.println("move forward");
-                moves.add(new Position(position.column-1, position.row));
-            }
 
-            // attacking move diagonally to the right
-            if (board.coordinates[position.column-1][position.row+1] != null) {
-                System.out.println("attacking move diagonally to the right");
-                moves.add(new Position(position.column-1, position.row+1));
-            }
+            if (this.getSide() == 0) {
+                // move forward
+                if (board.coordinates[position.column-1][position.row] == null) {
+                    System.out.println("move forward");
+                    moves.add(new Position(position.column-1, position.row));
+                }
 
-            // attacking move diagonally to the left
-            if (board.coordinates[position.column-1][position.row-1] != null) {
-                System.out.println("attacking move diagonally to the left");
-                moves.add(new Position(position.column-1, position.row-1));
-            }
+                // attacking move diagonally to the right
+                if (board.coordinates[position.column-1][position.row+1] != null && board.coordinates[position.column-1][position.row+1].getSide() != this.getSide()) {
+                    System.out.println("attacking move diagonally to the right");
+                    moves.add(new Position(position.column-1, position.row+1));
+                }
 
-            // starting opportunity
-            if (position.equals(startPosition) && board.coordinates[position.column-2][position.row] == null) {
-                System.out.println("starting opportunity");
-                moves.add(new Position(position.column-2, position.row));
-            }
+                // attacking move diagonally to the left
+                if (board.coordinates[position.column-1][position.row-1] != null && board.coordinates[position.column-1][position.row-1].getSide() != this.getSide()) {
+                    System.out.println("attacking move diagonally to the left");
+                    moves.add(new Position(position.column-1, position.row-1));
+                }
 
-            // en passant
-            if (game.getPreviousFigure().getClass().getSimpleName().equals("Pawn") &&
-                    game.getBeforeMove().column == game.getAfterMove().column-2 &&
-                    position.column == game.getAfterMove().column) {
-                System.out.println("en passant");
-                moves.add(new Position(game.getAfterMove().column-1, game.getAfterMove().row));
+                // starting opportunity
+                if (position.equals(startPosition) && board.coordinates[position.column-2][position.row] == null) {
+                    System.out.println("starting opportunity");
+                    moves.add(new Position(position.column-2, position.row));
+                }
+
+                // en passant
+                if (game.getPreviousFigure().getClass().getSimpleName().equals("Pawn") &&
+                        game.getBeforeMove().column == game.getAfterMove().column-2 &&
+                        position.column == game.getAfterMove().column &&
+                        game.getPreviousFigure().getSide() != this.getSide() &&
+                        board.coordinates[game.getAfterMove().column-1][game.getAfterMove().row] == null) {
+                    System.out.println("en passant");
+                    moves.add(new Position(game.getAfterMove().column-1, game.getAfterMove().row));
+                }
+            } else {
+                // move forward
+                if (board.coordinates[position.column+1][position.row] == null) {
+                    System.out.println("move forward");
+                    moves.add(new Position(position.column-1, position.row));
+                }
+
+                // attacking move diagonally to the right
+                if (board.coordinates[position.column+1][position.row+1] != null && board.coordinates[position.column+1][position.row+1].getSide() != this.getSide()) {
+                    System.out.println("attacking move diagonally to the right");
+                    moves.add(new Position(position.column+1, position.row+1));
+                }
+
+                // attacking move diagonally to the left
+                if (board.coordinates[position.column+1][position.row-1] != null && board.coordinates[position.column+1][position.row-1].getSide() != this.getSide()) {
+                    System.out.println("attacking move diagonally to the left");
+                    moves.add(new Position(position.column+1, position.row-1));
+                }
+
+                // starting opportunity
+                if (position.equals(startPosition) && board.coordinates[position.column+2][position.row] == null) {
+                    System.out.println("starting opportunity");
+                    moves.add(new Position(position.column+2, position.row));
+                }
+
+                // en passant
+                if (game.getPreviousFigure().getClass().getSimpleName().equals("Pawn") &&
+                        game.getBeforeMove().column == game.getAfterMove().column+2 &&
+                        position.column == game.getAfterMove().column &&
+                        game.getPreviousFigure().getSide() != this.getSide() &&
+                        board.coordinates[game.getAfterMove().column+1][game.getAfterMove().row] == null) {
+                    System.out.println("en passant");
+                    moves.add(new Position(game.getAfterMove().column+1, game.getAfterMove().row));
+                }
             }
         } catch (ArrayIndexOutOfBoundsException exception) {
             return null;
