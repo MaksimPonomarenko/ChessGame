@@ -19,10 +19,10 @@ public abstract class ChessFigure {
     // returns array of positions that available for move on
     public abstract ArrayList<Position> showPossibleMoves(Game game);
 
-    public Position getPosition(Board board) {
-        for(int i=0; i<board.coordinates.length; i++)
-            for(int j=0; j<board.coordinates[i].length; j++)
-                if(this == board.coordinates[i][j]) return new Position(i, j);
+    public Position getPosition(ChessFigure[][] board) {
+        for(int i=0; i<board.length; i++)
+            for(int j=0; j<board[i].length; j++)
+                if(this == board[i][j]) return new Position(i, j);
         return null;
     }
 
