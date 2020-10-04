@@ -14,6 +14,7 @@ public class Queen extends ChessPiece {
 
     @Override
     public ArrayList<Position> showPossibleMoves(Game game) {
+        long startTime = System.nanoTime();
         ChessPiece[][] board = game.getBoard().coordinates;
         ArrayList<Position> moves = new ArrayList<>();
         Position position = this.getPosition(board);
@@ -24,6 +25,9 @@ public class Queen extends ChessPiece {
                 checkAxis(board, i, j, moves);
             }
         }
+
+        long endTime = System.nanoTime();
+        System.out.println("Time spent: " + (endTime - startTime) + " nanos");
 
         moves.removeIf(move -> game.getKing(this.getSide()).checkMove(game, this, move));
 

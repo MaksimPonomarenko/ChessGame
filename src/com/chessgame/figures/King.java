@@ -14,7 +14,26 @@ public class King extends ChessPiece {
 
     @Override
     public ArrayList<Position> showPossibleMoves(Game game) {
-        return null;
+        long startTime = System.nanoTime();
+        ChessPiece[][] board = game.getBoard().coordinates;
+        ArrayList<Position> moves = new ArrayList<>();
+        Position position = this.getPosition(board);
+
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++){
+                if (i == 0 && j == 0) continue;
+                int x = position.column + i, y = position.row + j;
+                if (x > 7 || x < 0 || y > 7 || y < 0) continue;
+                if (board[x][y] == null || board[x][y].getSide() != this.getSide()) moves.add(new Position(x, y));
+            }
+        }
+
+        long endTime = System.nanoTime();
+        System.out.println("Time spent: " + (endTime - startTime) + " nanos");
+
+        moves.removeIf(move -> game.getKing(this.getSide()).checkMove(game, this, move));
+
+        return moves;
     }
 
     public boolean checkMove(Game game, ChessPiece piece, Position movePosition) {
