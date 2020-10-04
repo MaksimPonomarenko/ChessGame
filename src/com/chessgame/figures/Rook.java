@@ -33,6 +33,7 @@ public class Rook extends ChessPiece {
     private void checkAxis(ChessPiece[][] board, int changeX, int changeY, ArrayList<Position> moves) {
         Position rookPosition = new Position(this.getPosition(board).column, this.getPosition(board).row);
         int x = rookPosition.column + changeX, y = rookPosition.row + changeY;
+        if (x > 7 || x < 0 || y > 7 || y < 0) return;
         while (board[x][y] == null) {
             moves.add(new Position(x, y));
             x += changeX;
