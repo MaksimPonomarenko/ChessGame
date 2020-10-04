@@ -2,10 +2,10 @@ package com.chessgame;
 
 public class Board {
 
-    public ChessFigure[][] coordinates;
+    public ChessPiece[][] coordinates;
 
     public Board(int size) {
-        coordinates = new ChessFigure[size][size];
+        coordinates = new ChessPiece[size][size];
         System.out.println("Board have created");
     }
 }

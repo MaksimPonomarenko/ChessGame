@@ -1,12 +1,12 @@
 package com.chessgame.figures;
 
-import com.chessgame.ChessFigure;
+import com.chessgame.ChessPiece;
 import com.chessgame.Game;
 import com.chessgame.Position;
 
 import java.util.ArrayList;
 
-public class King extends ChessFigure {
+public class King extends ChessPiece {
 
     public King(int column, int row, int side) {
         super(column, row, side);
@@ -17,10 +17,31 @@ public class King extends ChessFigure {
         return null;
     }
 
-    public boolean checkIfMate(Game game, ChessFigure piece, Position movePosition) {
-        ChessFigure[][] board = game.getBoard().coordinates;
-        Position startPosition = piece.getPosition(board);
+    public boolean checkMove(Game game, ChessPiece piece, Position movePosition) {
+
+        // making virtual move
+        Position startPosition = new Position(piece.getPosition(game.getBoard().coordinates).column, piece.getPosition(game.getBoard().coordinates).row);
+        game.getBoard().coordinates[startPosition.column][startPosition.row] = null;
+        game.getBoard().coordinates[movePosition.column][movePosition.row] = piece;
+
+        // if virtualMove is for the king -> check for danger from knights
+        boolean danger = checkMove(game, startPosition, movePosition, piece.getClass().getSimpleName().equals("King"));
+
+        // getting piece back
+        game.getBoard().coordinates[startPosition.column][startPosition.row] = game.getBoard().coordinates[movePosition.column][movePosition.row];
+        game.getBoard().coordinates[movePosition.column][movePosition.row] = null;
+
+        return danger;
+    }
+
+    private boolean checkMove(Game game, Position startPosition, Position movePosition, boolean checkKnights) {
+
+        ChessPiece[][] board = game.getBoard().coordinates;
+
+        // getting movePosition relative to targeted piece
         Position move = new Position(movePosition.column - startPosition.column, movePosition.row - startPosition.row);
+
+        // getting piece position relative to king position
         Position relativeToKingPosition = new Position(startPosition.column - this.getPosition(board).column, startPosition.row - this.getPosition(board).row);
 
         // the chess piece is located on one of the king's axes without moving from this axis (nothing dangerous)
@@ -31,107 +52,63 @@ public class King extends ChessFigure {
             return false;
         }
 
-        // moving target chess piece to the theoretical point
-        ChessFigure target = board[piece.getPosition(board).column][piece.getPosition(board).row];
-        board[piece.getPosition(board).column][piece.getPosition(board).row] = null;
-        board[movePosition.column][movePosition.row] = target;
+        Position kingPosition = new Position(this.getPosition(board).column, this.getPosition(board).row);
 
-        boolean danger = false;
+        int axisX = 2, axisY = 2;
 
-        // king coordinates
-        int x = this.getPosition(board).column;
-        int y = this.getPosition(board).row;
+        // finding the axis on which the figure is moved
+        if (movePosition.column < 0 && (movePosition.column + 1) / (movePosition.row + 1) == (kingPosition.column + 1) / (kingPosition.row + 1)) {axisX = -1; axisY = -1;}
+        if (movePosition.column < 0 && movePosition.row == kingPosition.row) {axisX = -1; axisY = 0;}
+        if (movePosition.column < 0 && (movePosition.column + 1) / (movePosition.row + 1) == -(kingPosition.column + 1) / (kingPosition.row + 1)) {axisX = -1; axisY = 1;}
+        if (movePosition.row > 0 && movePosition.column == kingPosition.column) {axisX = 0; axisY = 1;}
+        if (movePosition.column > 0 && (movePosition.column + 1) / (movePosition.row + 1) == (kingPosition.column + 1) / (kingPosition.row + 1)) {axisX = 1; axisY = 1;}
+        if (movePosition.column > 0 && movePosition.row == kingPosition.row) {axisX = 1; axisY = 0;}
+        if (movePosition.column > 0 && (movePosition.column + 1) / (movePosition.row + 1) == -(kingPosition.column + 1) / (kingPosition.row + 1)) {axisX = 1; axisY = -1;}
+        if (movePosition.row < 0 && movePosition.column == kingPosition.column) {axisX = 0; axisY = -1;}
 
-        // the chess piece is moving from diagonal left to right axis
-        if (relativeToKingPosition.column == relativeToKingPosition.row) {
-            int beginX = x;
-            int beginY = y;
-            while (game.getBoard().coordinates[x][y] == null) {
-                x--;
-                y--;
-            }
-
-            if (game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[x][y].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Bishop") && game.getBoard().coordinates[x][y].getSide() != piece.getSide()) {
-                danger = true;
-            }
-
-            while (game.getBoard().coordinates[beginX][beginY] == null) {
-                beginX++;
-                beginY++;
-            }
-
-            if (game.getBoard().coordinates[beginX][beginY].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[beginX][beginY].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[beginX][beginY].getClass().getSimpleName().equals("Bishop") && game.getBoard().coordinates[beginX][beginY].getSide() != piece.getSide()) {
-                danger = true;
-            }
-        } else if (relativeToKingPosition.row == 0) { // the chess piece is moving from vertical axis
-            int beginY = y;
-            while (game.getBoard().coordinates[x][y] == null) {
-                y--;
-            }
-
-            if (game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[x][y].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Rook") && game.getBoard().coordinates[x][y].getSide() != piece.getSide()) {
-                danger = true;
-            }
-
-            while (game.getBoard().coordinates[x][beginY] == null) {
-                beginY++;
-            }
-
-            if (game.getBoard().coordinates[x][beginY].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[x][beginY].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[x][beginY].getClass().getSimpleName().equals("Rook") && game.getBoard().coordinates[x][beginY].getSide() != piece.getSide()) {
-                danger = true;
-            }
-        } else if (relativeToKingPosition.column == -relativeToKingPosition.row) { // the chess piece is moving from diagonal right to left axis
-            int beginX = x;
-            int beginY = y;
-            while (game.getBoard().coordinates[x][y] == null) {
-                x--;
-                y++;
-            }
-
-            if (game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[x][y].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Bishop") && game.getBoard().coordinates[x][y].getSide() != piece.getSide()) {
-                danger = true;
-            }
-
-            while (game.getBoard().coordinates[beginX][beginY] == null) {
-                beginX++;
-                beginY--;
-            }
-
-            if (game.getBoard().coordinates[beginX][beginY].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[beginX][beginY].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[beginX][beginY].getClass().getSimpleName().equals("Bishop") && game.getBoard().coordinates[beginX][beginY].getSide() != piece.getSide()) {
-                danger = true;
-            }
-        } else if (relativeToKingPosition.column == 0) { // the chess piece is moving from horizontal axis
-            int beginX = x;
-            while (game.getBoard().coordinates[x][y] == null) {
-                x--;
-            }
-
-            if (game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[x][y].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[x][y].getClass().getSimpleName().equals("Rook") && game.getBoard().coordinates[x][y].getSide() != piece.getSide()) {
-                danger = true;
-            }
-
-            while (game.getBoard().coordinates[beginX][y] == null) {
-                beginX++;
-            }
-
-            if (game.getBoard().coordinates[beginX][y].getClass().getSimpleName().equals("Queen") && game.getBoard().coordinates[beginX][y].getSide() != piece.getSide() ||
-                game.getBoard().coordinates[beginX][y].getClass().getSimpleName().equals("Rook") && game.getBoard().coordinates[beginX][y].getSide() != piece.getSide()) {
-                danger = true;
+        // checking all axis except for the axis on which the piece
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++){
+                if ((i == 0 && j == 0) || (i == axisX && j == axisY)) continue;
+                if (checkAxis(board, i, j)) return true;
             }
         }
 
-        // moving target chess piece back
-        target = board[movePosition.column][movePosition.row];
-        board[movePosition.column][movePosition.row] = null;
-        board[startPosition.column][startPosition.row] = target;
+        if (checkKnights) {
+            return  board[kingPosition.column + 2][kingPosition.row + 1].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column + 1][kingPosition.row + 2].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column - 1][kingPosition.row + 2].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column - 2][kingPosition.row + 1].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column - 2][kingPosition.row - 1].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column - 1][kingPosition.row - 2].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column + 1][kingPosition.row - 2].getClass().getSimpleName().equals("Knight") ||
+                    board[kingPosition.column + 2][kingPosition.row - 1].getClass().getSimpleName().equals("Knight");
+        }
+        return false;
+    }
 
-        return danger;
+    private boolean checkAxis(ChessPiece[][] board, int changeX, int changeY) {
+        Position kingPosition = new Position(this.getPosition(board).column, this.getPosition(board).row);
+        int x = kingPosition.column, y = kingPosition.row;
+        do {
+            x += changeX;
+            y += changeY;
+            if (x < 0 || x > 7 || y < 0 || y > 7) return false;
+        } while (board[x][y] == null);
+        if ((board[x][y].getClass().getSimpleName().equals("Bishop") || board[x][y].getClass().getSimpleName().equals("Queen")) &&
+                board[x][y].getSide() != this.getSide() && changeX != 0 && changeY != 0) return true;
+        if ((board[x][y].getClass().getSimpleName().equals("Rook") || board[x][y].getClass().getSimpleName().equals("Queen")) &&
+                board[x][y].getSide() != this.getSide() && (changeX == 0 || changeY == 0)) return true;
+        return false;
+    }
+
+    public boolean checkIfMate(Game game) {
+        ArrayList<Position> moves = this.showPossibleMoves(game);
+        for (Position i : moves) {
+            if (checkMove(game, this, i)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
