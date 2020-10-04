@@ -32,7 +32,7 @@ public class Game {
         long startTime = System.nanoTime();
         ArrayList<Position> moves = previousFigure.showPossibleMoves(this);
         long endTime = System.nanoTime();
-        System.out.println("Time spent: " + (endTime - startTime) + " nanosec");
+        System.out.println("Time spent: " + (endTime - startTime) + " nanos");
 
         for (Position move : moves) System.out.println(move.column + " " + move.row);
     }
